@@ -1,0 +1,88 @@
+Etapa 2 – Comentários explicativos
+
+// Validação do identificador do pedido
+if (pedidoId <= 0)
+{
+    mensagemResultado += "Pedido inválido\n";
+    pedidoInvalido = true;
+}
+
+// Validação de itens do pedido
+foreach (var item in itens)
+{
+    // Quantidade deve ser positiva
+    if (item.Quantidade <= 0)
+    {
+        mensagemResultado += $"Item com quantidade inválida: {item.Nome}\n";
+        pedidoInvalido = true;
+    }
+
+    // Preço unitário não pode ser negativo
+    if (item.PrecoUnitario < 0)
+    {
+        mensagemResultado += $"Item com preço inválido: {item.Nome}\n";
+        pedidoInvalido = true;
+    }
+
+    // Cálculo do subtotal
+    valorSubtotal += item.PrecoUnitario * item.Quantidade;
+
+    // Regras adicionais por categoria
+    if (item.Categoria == "ALIMENTO")
+        valorSubtotal += 2; // Taxa fixa para alimentos
+    if (item.Categoria == "IMPORTADO")
+        valorSubtotal += 5; // Taxa fixa para importados
+}
+
+
++----------------------------------+
+|            Cliente                |
++-----------------------------------+
+| - nome: string                    |
+| - email: string                   |
+| - tipo: string (VIP, PREMIUM...)  |
+| - bloqueado: bool                 |
++-----------------------------------+
+| + validarCliente(): bool          |
++-----------------------------------+
+
++-----------------------------------+
+|           ProdutoPedido           |
++-----------------------------------+
+| - nome: string                    |
+| - categoria: string (ALIMENTO...) |
+| - quantidade: int                 |
+| - precoUnitario: double           |
++-----------------------------------+
+| + calcularSubtotal(): double      |
++-----------------------------------+
+
++-----------------------------------+
+|             Pedido                |
++-----------------------------------+
+| - id: int                         |
+| - cliente: Cliente                |
+| - itens: List<ProdutoPedido>      |
+| - cupom: string                   |
+| - formaPagamento: string          |
+| - enderecoEntrega: string         |
+| - pesoTotal: double               |
+| - entregaExpressa: bool           |
+| - pais: string                    |
+| - parcelas: int                   |
++-----------------------------------+
+| + calcularSubtotal(): double      |
+| + aplicarDescontos(): double      |
+| + calcularFrete(): double         |
+| + calcularJuros(): double         |
+| + calcularTotal(): double         |
++-----------------------------------+
+
++-----------------------------------+
+|       ProcessadorDePedidos        |
++-----------------------------------+
+| - logs: List<string>              |
++-----------------------------------+
+| + CalcularResumoPedido(pedido:Pedido): string |
+| + ObterLogs(): List<string>       |
++-----------------------------------+
