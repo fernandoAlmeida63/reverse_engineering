@@ -1,0 +1,75 @@
+Parte 03: Reestruturação (O Código Refatorado)
+Seguindo a sugestão de "ir o mais longe possível", propus uma arquitetura baseada em Serviços de Domínio. Isso remove o "Método Deus" e torna o código extensível.
+
+namespace SistemaPedidos.Dominio
+{
+    // 1. Encapsulamento de Dados (Objeto de Valor/Entidade)
+    public class Pedido
+    {
+        public int Id { get; set; }
+        public Cliente Cliente { get; set; }
+        public List<ItemPedido> Itens { get; set; } = new List<ItemPedido>();
+        public string Cupom { get; set; }
+        public string FormaPagamento { get; set; }
+        public double PesoTotal { get; set; }
+        public bool EntregaExpressa { get; set; }
+        public int Parcelas { get; set; }
+        public string Pais { get; set; }
+    }
+
+    // 2. Separação de Responsabilidades (Serviços)
+    public class CalculadoraFinanceira
+    {
+        public double CalcularSubtotal(List<ItemPedido> itens) 
+            => itens.Sum(i => (i.PrecoUnitario * i.Quantidade) + (i.Categoria == "ALIMENTO" ? 2 : (i.Categoria == "IMPORTADO" ? 5 : 0)));
+
+        public double AplicarJuros(double subtotal, string forma, int parcelas)
+        {
+            if (forma != "CARTAO") return 0;
+            if (parcelas > 6) return subtotal * 0.05;
+            if (parcelas > 1) return subtotal * 0.02;
+            return 0;
+        }
+    }
+
+    public class PedidoService
+    {
+        private readonly CalculadoraFinanceira _calcFinan = new CalculadoraFinanceira();
+
+        public string Processar(Pedido pedido)
+        {
+            // Validações Iniciais (Fail Fast)
+            if (pedido.Cliente.EstaBloqueado) return "Erro: Cliente Bloqueado";
+            if (!pedido.Itens.Any()) return "Erro: Pedido sem itens";
+
+            double subtotal = _calcFinan.CalcularSubtotal(pedido.Itens);
+            double frete = CalcularFreteCustomizado(pedido);
+            double desconto = CalcularDescontoTotal(pedido, subtotal);
+            double juros = _calcFinan.AplicarJuros(subtotal, pedido.FormaPagamento, pedido.Parcelas);
+
+            double totalFinal = Math.Max(0, subtotal - desconto + frete + juros);
+
+            return GerarRelatorio(totalFinal, subtotal, pedido);
+        }
+
+        private double CalcularFreteCustomizado(Pedido p)
+        {
+            if (p.Cupom == "FRETEGRATIS") return 0;
+            // Lógica de frete nacional/internacional isolada aqui...
+            return p.Pais == "BR" ? 25 : 80; // Simplificado para exemplo
+        }
+
+        private double CalcularDescontoTotal(Pedido p, double subtotal)
+        {
+            // Implementação de lógica de desconto por TipoCliente e Cupons
+            return 0; 
+        }
+
+        private string GerarRelatorio(double total, double subtotal, Pedido p)
+        {
+            string log = $"TOTAL_FINAL={total}\n";
+            if (subtotal > 5000 && p.Cliente.EhNovo) log += "ALERTA: Pedido suspeito\n";
+            return log;
+        }
+    }
+}
