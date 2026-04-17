@@ -1,0 +1,20 @@
+Introdução
+Este relatório documenta o processo de Engenharia Reversa, Redocumentação e Reestruturação realizado sobre um sistema legado de processamento de pedidos em C#. O objetivo é transformar um "Código Espaguete" em uma estrutura moderna, seguindo princípios de Clean Code e SOLID.
+
+Parte 01: Reverse Engineering (Análise)
+1. Responsabilidade da Classe
+A classe PedidoProcessor atua como um "God Object", centralizando todas as etapas do ciclo de vida de um pedido: validação de dados, aplicação de regras de negócio financeiras, cálculo de logística, registro de logs e comunicação com o cliente.
+
+2. Regras de Negócio Identificadas
+Gestão de Itens: Adiciona taxas fixas por categoria (Alimento: +R$ 2,00 / Importado: +R$ 5,00).
+
+Fidelização: Aplica descontos progressivos baseados no tipo de cliente (VIP 15%, Premium 10%, Normal 2%).
+
+Logística: Matriz de frete baseada em peso e país (BR vs Internacional), com adicional para entrega expressa.
+
+Financeiro: Cálculo de juros para parcelamento no cartão e descontos para pagamentos à vista (PIX/Boleto).
+
+Segurança/Alertas: Identificação de pedidos suspeitos (clientes novos com compras > 5.000) e limites para boletos (> 3.000).
+
+3. Análise de Parâmetros (Dicionário de Dados)
+Foram inseridos comentários explicativos no código original para identificar a função de cada um dos 14 parâmetros, garantindo que a intenção de cada variável seja clara para futuros desenvolvedores.
